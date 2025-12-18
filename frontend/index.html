@@ -2,259 +2,1020 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>AutoSched-AI</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AutoSched-AI | Your Intelligent Meeting Assistant</title>
     <style>
-      body {
-        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-          sans-serif;
+      :root {
+        --bg-primary: #0a0a0a;
+        --bg-secondary: #111;
+        --bg-tertiary: #1a1a1a;
+        --text-primary: #fff;
+        --text-secondary: #aaa;
+        --border: #333;
+        --accent: #fff;
+        --accent-hover: #f0f0f0;
+        --success: #4ade80;
+        --error: #f87171;
+        --shadow: rgba(0, 0, 0, 0.5);
+      }
+
+      [data-theme="light"] {
+        --bg-primary: #ffffff;
+        --bg-secondary: #f5f5f5;
+        --bg-tertiary: #e5e5e5;
+        --text-primary: #000;
+        --text-secondary: #666;
+        --border: #ddd;
+        --accent: #000;
+        --accent-hover: #333;
+        --shadow: rgba(0, 0, 0, 0.1);
+      }
+
+      * {
         margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        background: var(--bg-primary);
+        color: var(--text-primary);
         min-height: 100vh;
-        background: #000;
-        color: #fff;
+        transition: background 0.3s ease, color 0.3s ease;
+      }
+
+      /* Login Screen */
+      .login-screen {
         display: flex;
+        align-items: center;
         justify-content: center;
-        align-items: flex-start;
+        min-height: 100vh;
         padding: 2rem;
       }
-      .shell {
+
+      .login-card {
+        background: var(--bg-secondary);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 3rem;
+        max-width: 420px;
         width: 100%;
-        max-width: 900px;
-        display: grid;
-        grid-template-columns: 1fr 2fr;
-        gap: 1.5rem;
+        box-shadow: 0 8px 32px var(--shadow);
+        transition: all 0.3s ease;
       }
-      .card {
-        background: #111;
-        border-radius: 12px;
-        border: 1px solid #444;
-        padding: 1.25rem;
+
+      .login-card h1 {
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
       }
-      label {
+
+      .login-card p {
+        color: var(--text-secondary);
+        margin-bottom: 2rem;
+        font-size: 0.95rem;
+      }
+
+      .form-group {
+        margin-bottom: 1.25rem;
+      }
+
+      .form-group label {
         display: block;
-        font-size: 0.8rem;
-        margin-top: 0.4rem;
+        margin-bottom: 0.5rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: var(--text-secondary);
       }
-      input,
-      select,
-      button {
+
+      .form-group input {
         width: 100%;
-        margin-top: 0.25rem;
-        padding: 0.4rem;
-        border-radius: 6px;
-        border: 1px solid #333;
-        background: #000;
-        color: #fff;
+        padding: 0.75rem;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: var(--bg-primary);
+        color: var(--text-primary);
+        font-size: 0.95rem;
+        transition: all 0.2s ease;
       }
-      button {
-        background: #fff;
-        color: #000;
+
+      .form-group input:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      }
+
+      .btn {
+        padding: 0.75rem 1.5rem;
         border: none;
+        border-radius: 8px;
         font-weight: 600;
         cursor: pointer;
+        transition: all 0.2s ease;
+        font-size: 0.95rem;
       }
-      pre {
-        background: #000;
+
+      .btn-primary {
+        background: var(--accent);
+        color: var(--bg-primary);
+        width: 100%;
+      }
+
+      .btn-primary:hover {
+        background: var(--accent-hover);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px var(--shadow);
+      }
+
+      .btn-secondary {
+        background: transparent;
+        color: var(--text-primary);
+        border: 1px solid var(--border);
+        margin-top: 0.5rem;
+        width: 100%;
+      }
+
+      .btn-secondary:hover {
+        background: var(--bg-tertiary);
+      }
+
+      .auth-switch {
+        text-align: center;
+        margin-top: 1.5rem;
+        color: var(--text-secondary);
+        font-size: 0.875rem;
+      }
+
+      .auth-switch button {
+        background: none;
+        border: none;
+        color: #667eea;
+        cursor: pointer;
+        text-decoration: underline;
+        font-size: inherit;
+      }
+
+      .error-message {
+        color: var(--error);
+        font-size: 0.875rem;
+        margin-top: 0.5rem;
+      }
+
+      /* Main App */
+      .app-container {
+        display: none;
+        min-height: 100vh;
+      }
+
+      .app-container.active {
+        display: block;
+      }
+
+      .header {
+        background: var(--bg-secondary);
+        border-bottom: 1px solid var(--border);
+        padding: 1rem 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+      }
+
+      .header h1 {
+        font-size: 1.5rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      .header-actions {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+      }
+
+      .theme-toggle {
+        background: var(--bg-tertiary);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 0.5rem 1rem;
+        cursor: pointer;
+        font-size: 1.2rem;
+        transition: all 0.2s ease;
+      }
+
+      .theme-toggle:hover {
+        background: var(--bg-secondary);
+      }
+
+      .logout-btn {
+        background: transparent;
+        border: 1px solid var(--border);
+        color: var(--text-primary);
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 0.875rem;
+        transition: all 0.2s ease;
+      }
+
+      .logout-btn:hover {
+        background: var(--bg-tertiary);
+      }
+
+      .main-content {
+        display: grid;
+        grid-template-columns: 320px 1fr 380px;
+        gap: 1.5rem;
+        padding: 2rem;
+        max-width: 1800px;
+        margin: 0 auto;
+        align-items: start;
+      }
+
+      .sidebar {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        min-width: 0;
+      }
+
+      .card {
+        background: var(--bg-secondary);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 1.5rem;
+        transition: all 0.2s ease;
+        overflow: hidden;
+      }
+
+      .card:hover {
+        box-shadow: 0 4px 16px var(--shadow);
+      }
+
+      .card h3 {
+        margin-bottom: 1rem;
+        font-size: 1.1rem;
+        color: var(--text-primary);
+      }
+
+      /* Calendar */
+      .calendar-card {
+        max-height: 400px;
+        overflow: hidden;
+      }
+
+      .calendar {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 0.4rem;
+        width: 100%;
+        max-width: 100%;
+      }
+
+      .calendar-header {
+        text-align: center;
+        font-weight: 600;
+        font-size: 0.75rem;
+        color: var(--text-secondary);
+        padding: 0.4rem 0.25rem;
+      }
+
+      .calendar-day {
+        aspect-ratio: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid var(--border);
         border-radius: 6px;
-        border: 1px solid #333;
-        padding: 0.5rem;
-        font-size: 0.7rem;
-        max-height: 150px;
-        overflow: auto;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-size: 0.75rem;
+        background: var(--bg-primary);
+        min-width: 0;
+        padding: 0.25rem;
+      }
+
+      .calendar-day:hover {
+        background: var(--bg-tertiary);
+        border-color: #667eea;
+      }
+
+      .calendar-day.today {
+        background: #667eea;
+        color: white;
+        font-weight: 600;
+      }
+
+      .calendar-day.has-meeting {
+        border-color: var(--success);
+        border-width: 2px;
+      }
+
+      .calendar-day.has-meeting::after {
+        content: "•";
+        color: var(--success);
+        font-size: 1.2rem;
+        margin-top: -0.2rem;
+      }
+
+      /* Notes */
+      .notes-list {
+        max-height: 400px;
+        overflow-y: auto;
+      }
+
+      .note-item {
+        padding: 0.75rem;
+        border-bottom: 1px solid var(--border);
+        cursor: pointer;
+        transition: background 0.2s ease;
+      }
+
+      .note-item:hover {
+        background: var(--bg-tertiary);
+      }
+
+      .note-item:last-child {
+        border-bottom: none;
+      }
+
+      .note-title {
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+        font-size: 0.9rem;
+      }
+
+      .note-preview {
+        color: var(--text-secondary);
+        font-size: 0.8rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .note-editor {
+        display: none;
+      }
+
+      .note-editor.active {
+        display: block;
+      }
+
+      .note-editor textarea {
+        width: 100%;
+        min-height: 200px;
+        padding: 0.75rem;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: var(--bg-primary);
+        color: var(--text-primary);
+        font-family: inherit;
+        font-size: 0.9rem;
+        resize: vertical;
+      }
+
+      /* Chatbot */
+      .chatbot {
+        display: flex;
+        flex-direction: column;
+        height: 600px;
+        background: var(--bg-secondary);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        overflow: hidden;
+      }
+
+      .chatbot-header {
+        padding: 1rem;
+        border-bottom: 1px solid var(--border);
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        font-weight: 600;
+      }
+
+      .chatbot-messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 1rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+      }
+
+      .message {
+        display: flex;
+        gap: 0.75rem;
+        animation: fadeIn 0.3s ease;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .message.user {
+        flex-direction: row-reverse;
+      }
+
+      .message-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 0.875rem;
+        flex-shrink: 0;
+      }
+
+      .message.bot .message-avatar {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+      }
+
+      .message.user .message-avatar {
+        background: var(--bg-tertiary);
+        color: var(--text-primary);
+      }
+
+      .message-content {
+        max-width: 70%;
+        padding: 0.75rem 1rem;
+        border-radius: 12px;
+        font-size: 0.9rem;
+        line-height: 1.5;
+      }
+
+      .message.bot .message-content {
+        background: var(--bg-tertiary);
+        color: var(--text-primary);
+      }
+
+      .message.user .message-content {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+      }
+
+      .chatbot-input {
+        display: flex;
+        gap: 0.5rem;
+        padding: 1rem;
+        border-top: 1px solid var(--border);
+        background: var(--bg-secondary);
+      }
+
+      .chatbot-input input {
+        flex: 1;
+        padding: 0.75rem;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: var(--bg-primary);
+        color: var(--text-primary);
+        font-size: 0.9rem;
+      }
+
+      .chatbot-input button {
+        padding: 0.75rem 1.5rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.2s ease;
+      }
+
+      .chatbot-input button:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px var(--shadow);
+      }
+
+      .chatbot-input button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      /* Meeting Form */
+      .meeting-form {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+      }
+
+      .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+      }
+
+      .form-group-full {
+        grid-column: 1 / -1;
+      }
+
+      .meeting-form input,
+      .meeting-form select,
+      .meeting-form textarea {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: var(--bg-primary);
+        color: var(--text-primary);
+        font-size: 0.9rem;
+        font-family: inherit;
+      }
+
+      .meeting-form textarea {
+        resize: vertical;
+        min-height: 80px;
+      }
+
+      .meeting-form label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: var(--text-secondary);
+      }
+
+      .meetings-list {
+        max-height: 400px;
+        overflow-y: auto;
+      }
+
+      .meeting-item {
+        padding: 1rem;
+        border-bottom: 1px solid var(--border);
+        transition: background 0.2s ease;
+      }
+
+      .meeting-item:hover {
+        background: var(--bg-tertiary);
+      }
+
+      .meeting-item:last-child {
+        border-bottom: none;
+      }
+
+      .meeting-title {
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+      }
+
+      .meeting-meta {
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+      }
+
+      .loading {
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        border: 2px solid var(--border);
+        border-top-color: var(--accent);
+        border-radius: 50%;
+        animation: spin 0.6s linear infinite;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      @media (max-width: 1200px) {
+        .main-content {
+          grid-template-columns: 1fr;
+        }
       }
     </style>
   </head>
   <body>
-    <div class="shell">
-      <div class="card">
-        <h2 style="margin-top: 0">AutoSched-AI</h2>
-        <p style="color: #aaa; font-size: 0.8rem">
-          Minimal black scheduling dashboard.
-        </p>
+    <!-- Login Screen -->
+    <div class="login-screen" id="loginScreen">
+      <div class="login-card">
+        <h1>✨ AutoSched-AI</h1>
+        <p>Your intelligent meeting assistant. Schedule smarter, stay organized.</p>
+        <form id="authForm">
+          <div class="form-group">
+            <label>Username</label>
+            <input type="text" id="authUsername" required autocomplete="username" />
+          </div>
+          <div class="form-group" id="emailGroup">
+            <label>Email</label>
+            <input type="email" id="authEmail" autocomplete="email" />
+          </div>
+          <div class="form-group">
+            <label>Password</label>
+            <input type="password" id="authPassword" required autocomplete="current-password" />
+          </div>
+          <button type="submit" class="btn btn-primary" id="authSubmit">Sign In</button>
+          <div class="auth-switch">
+            <span id="authSwitchText">Don't have an account?</span>
+            <button type="button" id="authSwitchBtn">Sign up</button>
+          </div>
+          <div class="error-message" id="authError"></div>
+        </form>
+      </div>
+    </div>
 
-        <h4>Auth</h4>
-        <label>Username</label>
-        <input id="auth-username" />
-        <label>Email (for signup)</label>
-        <input id="auth-email" />
-        <label>Password</label>
-        <input id="auth-password" type="password" />
-        <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem">
-          <button id="btn-login" style="flex: 1">Login</button>
-          <button id="btn-signup" style="flex: 1">Sign up</button>
+    <!-- Main App -->
+    <div class="app-container" id="appContainer">
+      <div class="header">
+        <h1>✨ AutoSched-AI</h1>
+        <div class="header-actions">
+          <button class="theme-toggle" id="themeToggle" title="Toggle theme">🌓</button>
+          <button class="logout-btn" id="logoutBtn">Logout</button>
         </div>
-        <div id="auth-status" style="margin-top: 0.5rem; font-size: 0.75rem"></div>
       </div>
 
-      <div class="card">
-        <h3 style="margin-top: 0">Create Meeting</h3>
-        <div
-          style="
-            display: grid;
-            grid-template-columns: 1.2fr 0.8fr;
-            gap: 0.75rem;
-            font-size: 0.8rem;
-          "
-        >
-          <div>
-            <label>Title</label>
-            <input id="title" />
-
-            <label>Date</label>
-            <input id="date" type="date" />
-
-            <label>Time</label>
-            <input id="time" type="time" />
-
-            <label>Timezone</label>
-            <select id="timezone">
-              <option value="Asia/Kolkata">Asia/Kolkata (IST)</option>
-              <option value="UTC">UTC</option>
-              <option value="America/New_York">America/New_York</option>
-              <option value="Europe/London">Europe/London</option>
-            </select>
+      <div class="main-content">
+        <!-- Left Sidebar: Calendar & Notes -->
+        <div class="sidebar">
+          <!-- Calendar -->
+          <div class="card">
+            <h3>📅 Calendar</h3>
+            <div class="calendar" id="calendar"></div>
           </div>
-          <div>
-            <label>Mode</label>
-            <select id="mode">
-              <option value="">(none)</option>
-              <option value="online">Online</option>
-              <option value="offline">Offline</option>
-            </select>
 
-            <label>Platform</label>
-            <select id="app">
-              <option value="">(none)</option>
-              <option value="meet">Google Meet</option>
-              <option value="zoom">Zoom</option>
-              <option value="teams">Teams</option>
-            </select>
-
-            <label>Meeting URL</label>
-            <input id="link" />
-
-            <label>Location (onsite)</label>
-            <input id="location" />
+          <!-- Notes -->
+          <div class="card">
+            <h3>📝 Quick Notes</h3>
+            <div class="notes-list" id="notesList"></div>
+            <div class="note-editor" id="noteEditor">
+              <textarea id="noteContent" placeholder="Write your note here..."></textarea>
+              <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem">
+                <button class="btn btn-primary" id="saveNote" style="flex: 1">Save</button>
+                <button class="btn btn-secondary" id="cancelNote" style="flex: 1">Cancel</button>
+              </div>
+            </div>
+            <button class="btn btn-secondary" id="newNote" style="margin-top: 1rem; width: 100%">
+              + New Note
+            </button>
           </div>
         </div>
 
-        <div
-          style="
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 0.75rem;
-            margin-top: 1rem;
-            font-size: 0.8rem;
-          "
-        >
-          <div>
-            <label>Minutes before</label>
-            <input id="rem-before" type="number" value="15" />
+        <!-- Center: Meetings & Form -->
+        <div class="card" style="min-width: 0; overflow-x: hidden">
+          <h3>🎯 Schedule Meeting</h3>
+          <div class="meeting-form">
+            <div class="form-group-full">
+              <label>Title</label>
+              <input type="text" id="meetingTitle" placeholder="Meeting title" />
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Date</label>
+                <input type="date" id="meetingDate" />
+              </div>
+              <div class="form-group">
+                <label>Time</label>
+                <input type="time" id="meetingTime" />
+              </div>
+            </div>
+            <div class="form-group-full">
+              <label>Timezone</label>
+              <select id="meetingTimezone">
+                <option value="Asia/Kolkata">Asia/Kolkata (IST)</option>
+                <option value="UTC">UTC</option>
+                <option value="America/New_York">America/New_York</option>
+                <option value="Europe/London">Europe/London</option>
+              </select>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Mode</label>
+                <select id="meetingMode">
+                  <option value="">Select mode</option>
+                  <option value="online">Online</option>
+                  <option value="offline">Offline</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Platform</label>
+                <select id="meetingPlatform">
+                  <option value="">Select platform</option>
+                  <option value="meet">Google Meet</option>
+                  <option value="zoom">Zoom</option>
+                  <option value="teams">Teams</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group-full">
+              <label>Meeting URL</label>
+              <input type="url" id="meetingLink" placeholder="https://..." />
+            </div>
+            <div class="form-group-full">
+              <label>Location (for offline meetings)</label>
+              <input type="text" id="meetingLocation" placeholder="Physical address" />
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Remind me (minutes before)</label>
+                <input type="number" id="reminderBefore" value="15" min="1" />
+              </div>
+              <div class="form-group">
+                <label>Number of reminders</label>
+                <input type="number" id="reminderCount" value="1" min="1" />
+              </div>
+            </div>
+            <div class="form-group-full">
+              <label>Reminder interval (minutes)</label>
+              <input type="number" id="reminderInterval" value="5" min="1" />
+            </div>
+            <button class="btn btn-primary" id="scheduleBtn">✨ Schedule Meeting</button>
+            <div class="error-message" id="scheduleError"></div>
           </div>
-          <div>
-            <label>Reminder count</label>
-            <input id="rem-count" type="number" value="1" />
-          </div>
-          <div>
-            <label>Interval (min)</label>
-            <input id="rem-interval" type="number" value="5" />
+
+          <div style="margin-top: 2rem">
+            <h3>📋 Upcoming Meetings</h3>
+            <div class="meetings-list" id="meetingsList"></div>
           </div>
         </div>
 
-        <button id="btn-schedule" style="margin-top: 1rem">Schedule</button>
-
-        <div id="error" style="color: #f44; font-size: 0.75rem; margin-top: 0.5rem">
+        <!-- Right Sidebar: AI Chatbot -->
+        <div class="card">
+          <div class="chatbot">
+            <div class="chatbot-header">🤖 AI Assistant</div>
+            <div class="chatbot-messages" id="chatMessages">
+              <div class="message bot">
+                <div class="message-avatar">AI</div>
+                <div class="message-content">
+                  Hi! 👋 I'm your AI scheduling assistant. I can help you schedule meetings, answer questions, and chat! Try saying "hi", "how are you", or "schedule a meeting tomorrow at 3pm".
+                </div>
+              </div>
+            </div>
+            <div class="chatbot-input">
+              <input
+                type="text"
+                id="chatInput"
+                placeholder="Type your message..."
+                autocomplete="off"
+              />
+              <button id="chatSend" type="button">Send</button>
+            </div>
+          </div>
         </div>
-        <pre id="result"></pre>
       </div>
     </div>
 
     <script>
       const API_BASE = "http://127.0.0.1:8000";
-      let token = null;
+      let token = localStorage.getItem("token");
+      let isSignUp = false;
+      let currentNoteId = null;
+      let meetings = JSON.parse(localStorage.getItem("meetings") || "[]");
+      let notes = JSON.parse(localStorage.getItem("notes") || "[]");
 
-      async function callApi(path, method, body, useAuth = false) {
-        const headers = { "Content-Type": "application/json" };
-        if (useAuth && token) headers["Authorization"] = "Token " + token;
-        const res = await fetch(API_BASE + path, {
-          method,
-          headers,
-          body: body ? JSON.stringify(body) : undefined,
-        });
-        const data = await res.json().catch(() => ({}));
-        if (!res.ok) {
-          throw data;
+      // Theme Management
+      const theme = localStorage.getItem("theme") || "dark";
+      document.documentElement.setAttribute("data-theme", theme);
+      document.getElementById("themeToggle").textContent = theme === "dark" ? "☀️" : "🌙";
+
+      document.getElementById("themeToggle").onclick = () => {
+        const newTheme = theme === "dark" ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", newTheme);
+        localStorage.setItem("theme", newTheme);
+        document.getElementById("themeToggle").textContent = newTheme === "dark" ? "☀️" : "🌙";
+      };
+
+      // Auth Management
+      function checkAuth() {
+        if (token) {
+          document.getElementById("loginScreen").style.display = "none";
+          document.getElementById("appContainer").classList.add("active");
+          loadMeetings();
+          renderCalendar();
+          renderNotes();
         }
-        return data;
       }
 
-      document.getElementById("btn-login").onclick = async () => {
-        const username = document.getElementById("auth-username").value;
-        const password = document.getElementById("auth-password").value;
-        try {
-          const data = await callApi(
-            "/api/login/",
-            "POST",
-            { username, password },
-            false
-          );
-          token = data.token;
-          document.getElementById("auth-status").textContent = "Logged in.";
-        } catch (e) {
-          document.getElementById("auth-status").textContent =
-            e.error || "Login failed";
+      document.getElementById("authSwitchBtn").onclick = () => {
+        isSignUp = !isSignUp;
+        const emailGroup = document.getElementById("emailGroup");
+        const submitBtn = document.getElementById("authSubmit");
+        const switchText = document.getElementById("authSwitchText");
+        const switchBtn = document.getElementById("authSwitchBtn");
+
+        if (isSignUp) {
+          emailGroup.style.display = "block";
+          submitBtn.textContent = "Sign Up";
+          switchText.textContent = "Already have an account?";
+          switchBtn.textContent = "Sign in";
+        } else {
+          emailGroup.style.display = "none";
+          submitBtn.textContent = "Sign In";
+          switchText.textContent = "Don't have an account?";
+          switchBtn.textContent = "Sign up";
         }
       };
 
-      document.getElementById("btn-signup").onclick = async () => {
-        const username = document.getElementById("auth-username").value;
-        const email = document.getElementById("auth-email").value;
-        const password = document.getElementById("auth-password").value;
+      document.getElementById("authForm").onsubmit = async (e) => {
+        e.preventDefault();
+        const errorEl = document.getElementById("authError");
+        errorEl.textContent = "";
+
+        const username = document.getElementById("authUsername").value;
+        const password = document.getElementById("authPassword").value;
+        const email = document.getElementById("authEmail").value;
+
         try {
-          const data = await callApi(
-            "/api/signup/",
-            "POST",
-            { username, email, password },
-            false
-          );
+          const endpoint = isSignUp ? "/api/signup/" : "/api/login/";
+          const body = isSignUp ? { username, email, password } : { username, password };
+
+          const res = await fetch(API_BASE + endpoint, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body),
+          });
+
+          const data = await res.json();
+
+          if (!res.ok) {
+            throw new Error(data.error || "Authentication failed");
+          }
+
           token = data.token;
-          document.getElementById("auth-status").textContent = "Account created.";
-        } catch (e) {
-          document.getElementById("auth-status").textContent =
-            e.error || "Signup failed";
+          localStorage.setItem("token", token);
+          checkAuth();
+        } catch (error) {
+          errorEl.textContent = error.message;
         }
       };
 
-      document.getElementById("btn-schedule").onclick = async () => {
-        const errEl = document.getElementById("error");
-        const resEl = document.getElementById("result");
-        errEl.textContent = "";
-        resEl.textContent = "";
+      document.getElementById("logoutBtn").onclick = () => {
+        token = null;
+        localStorage.removeItem("token");
+        document.getElementById("loginScreen").style.display = "flex";
+        document.getElementById("appContainer").classList.remove("active");
+      };
 
-        if (!token) {
-          errEl.textContent = "Please login or signup first.";
+      // Calendar
+      function renderCalendar() {
+        const calendarEl = document.getElementById("calendar");
+        const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+        const today = new Date();
+        const currentMonth = today.getMonth();
+        const currentYear = today.getFullYear();
+        const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+        const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+
+        calendarEl.innerHTML = "";
+
+        days.forEach((day) => {
+          const header = document.createElement("div");
+          header.className = "calendar-header";
+          header.textContent = day;
+          calendarEl.appendChild(header);
+        });
+
+        for (let i = 0; i < firstDay; i++) {
+          const empty = document.createElement("div");
+          calendarEl.appendChild(empty);
+        }
+
+        for (let day = 1; day <= daysInMonth; day++) {
+          const dayEl = document.createElement("div");
+          dayEl.className = "calendar-day";
+          dayEl.textContent = day;
+
+          const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+          const hasMeeting = meetings.some((m) => m.start_time_utc?.startsWith(dateStr));
+
+          if (
+            day === today.getDate() &&
+            currentMonth === today.getMonth() &&
+            currentYear === today.getFullYear()
+          ) {
+            dayEl.classList.add("today");
+          }
+
+          if (hasMeeting) {
+            dayEl.classList.add("has-meeting");
+          }
+
+          dayEl.onclick = () => {
+            document.getElementById("meetingDate").value = dateStr;
+          };
+
+          calendarEl.appendChild(dayEl);
+        }
+      }
+
+      // Notes
+      function renderNotes() {
+        const notesListEl = document.getElementById("notesList");
+        notesListEl.innerHTML = "";
+
+        notes.forEach((note, index) => {
+          const noteEl = document.createElement("div");
+          noteEl.className = "note-item";
+          noteEl.innerHTML = `
+            <div class="note-title">${note.title || "Untitled"}</div>
+            <div class="note-preview">${note.content.substring(0, 50)}...</div>
+          `;
+          noteEl.onclick = () => editNote(index);
+          notesListEl.appendChild(noteEl);
+        });
+      }
+
+      document.getElementById("newNote").onclick = () => {
+        currentNoteId = null;
+        document.getElementById("noteContent").value = "";
+        document.getElementById("noteEditor").classList.add("active");
+      };
+
+      document.getElementById("saveNote").onclick = () => {
+        const content = document.getElementById("noteContent").value;
+        if (!content.trim()) return;
+
+        const title = content.split("\n")[0].substring(0, 30);
+        const note = { title, content, createdAt: new Date().toISOString() };
+
+        if (currentNoteId !== null) {
+          notes[currentNoteId] = note;
+        } else {
+          notes.push(note);
+        }
+
+        localStorage.setItem("notes", JSON.stringify(notes));
+        document.getElementById("noteEditor").classList.remove("active");
+        renderNotes();
+      };
+
+      document.getElementById("cancelNote").onclick = () => {
+        document.getElementById("noteEditor").classList.remove("active");
+      };
+
+      function editNote(index) {
+        currentNoteId = index;
+        document.getElementById("noteContent").value = notes[index].content;
+        document.getElementById("noteEditor").classList.add("active");
+      }
+
+      // Meetings
+      function loadMeetings() {
+        // In a real app, fetch from API
+        renderMeetings();
+      }
+
+      function renderMeetings() {
+        const meetingsListEl = document.getElementById("meetingsList");
+        meetingsListEl.innerHTML = "";
+
+        if (meetings.length === 0) {
+          meetingsListEl.innerHTML = '<div style="text-align: center; color: var(--text-secondary); padding: 2rem;">No meetings scheduled yet</div>';
           return;
         }
 
-        const title = document.getElementById("title").value;
-        const date = document.getElementById("date").value;
-        const time = document.getElementById("time").value;
-        const timezone = document.getElementById("timezone").value;
-        const mode = document.getElementById("mode").value || null;
-        const app = document.getElementById("app").value || null;
-        const link = document.getElementById("link").value || null;
-        const location = document.getElementById("location").value || null;
-        const remBefore = parseInt(
-          document.getElementById("rem-before").value || "15",
-          10
-        );
-        const remCount = parseInt(
-          document.getElementById("rem-count").value || "1",
-          10
-        );
-        const remInterval = parseInt(
-          document.getElementById("rem-interval").value || "5",
-          10
-        );
+        meetings.forEach((meeting) => {
+          const meetingEl = document.createElement("div");
+          meetingEl.className = "meeting-item";
+          const date = new Date(meeting.start_time_utc);
+          meetingEl.innerHTML = `
+            <div class="meeting-title">${meeting.title}</div>
+            <div class="meeting-meta">${date.toLocaleString()} • ${meeting.mode || "N/A"}</div>
+          `;
+          meetingsListEl.appendChild(meetingEl);
+        });
+      }
+
+      document.getElementById("scheduleBtn").onclick = async () => {
+        const errorEl = document.getElementById("scheduleError");
+        errorEl.textContent = "";
+
+        const title = document.getElementById("meetingTitle").value;
+        const date = document.getElementById("meetingDate").value;
+        const time = document.getElementById("meetingTime").value;
+        const timezone = document.getElementById("meetingTimezone").value;
+        const mode = document.getElementById("meetingMode").value || null;
+        const app = document.getElementById("meetingPlatform").value || null;
+        const link = document.getElementById("meetingLink").value || null;
+        const location = document.getElementById("meetingLocation").value || null;
+        const remBefore = parseInt(document.getElementById("reminderBefore").value || "15", 10);
+        const remCount = parseInt(document.getElementById("reminderCount").value || "1", 10);
+        const remInterval = parseInt(document.getElementById("reminderInterval").value || "5", 10);
+
+        if (!title || !date || !time) {
+          errorEl.textContent = "Please fill in title, date, and time";
+          return;
+        }
 
         const startLocal = new Date(`${date}T${time}`);
         const startUtc = startLocal.toISOString();
@@ -274,24 +1035,187 @@
           reminder_count: remCount,
           reminder_interval_minutes: remInterval,
           cron_expression: null,
-          email_to: document.getElementById("auth-email").value || "user@example.com",
+          email_to: localStorage.getItem("userEmail") || "user@example.com",
           json_created_at: nowUtc,
         };
 
         try {
-          const data = await callApi(
-            "/api/schedule/",
-            "POST",
-            { text: JSON.stringify(payload) },
-            true
-          );
-          resEl.textContent = JSON.stringify(data, null, 2);
-        } catch (e) {
-          errEl.textContent = e.error || "Schedule failed";
+          const res = await fetch(API_BASE + "/api/schedule/", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: "Token " + token,
+            },
+            body: JSON.stringify({ text: JSON.stringify(payload) }),
+          });
+
+          const data = await res.json();
+
+          if (!res.ok) {
+            throw new Error(data.error || "Failed to schedule meeting");
+          }
+
+          meetings.push(data);
+          localStorage.setItem("meetings", JSON.stringify(meetings));
+          renderMeetings();
+          renderCalendar();
+
+          // Clear form
+          document.getElementById("meetingTitle").value = "";
+          document.getElementById("meetingDate").value = "";
+          document.getElementById("meetingTime").value = "";
+          errorEl.textContent = "";
+          errorEl.style.color = "var(--success)";
+          errorEl.textContent = "✓ Meeting scheduled successfully!";
+          setTimeout(() => (errorEl.textContent = ""), 3000);
+        } catch (error) {
+          errorEl.textContent = error.message;
         }
       };
+
+      // Chatbot
+      function addMessage(content, isUser = false) {
+        const messagesEl = document.getElementById("chatMessages");
+        const messageEl = document.createElement("div");
+        messageEl.className = `message ${isUser ? "user" : "bot"}`;
+        messageEl.innerHTML = `
+          <div class="message-avatar">${isUser ? "You" : "AI"}</div>
+          <div class="message-content">${content}</div>
+        `;
+        messagesEl.appendChild(messageEl);
+        messagesEl.scrollTop = messagesEl.scrollHeight;
+      }
+
+      function handleBasicConversation(message) {
+        const lowerMsg = message.toLowerCase().trim();
+        
+        // Greetings
+        if (lowerMsg.match(/^(hi|hello|hey|greetings|good morning|good afternoon|good evening)/)) {
+          const greetings = [
+            "Hello! 👋 Great to see you! How can I help you schedule a meeting today?",
+            "Hi there! 😊 I'm here to help you manage your meetings. What would you like to schedule?",
+            "Hey! 👋 Ready to organize your schedule? Just tell me when you want to meet!",
+            "Hello! 🌟 I'm your scheduling assistant. How can I assist you today?"
+          ];
+          return greetings[Math.floor(Math.random() * greetings.length)];
+        }
+        
+        // How are you
+        if (lowerMsg.match(/^(how are you|how's it going|how do you do|what's up)/)) {
+          return "I'm doing great, thank you! 😊 I'm here and ready to help you schedule meetings. What would you like to plan today?";
+        }
+        
+        // Meeting details/questions
+        if (lowerMsg.match(/(what meetings|show meetings|list meetings|my meetings|upcoming meetings)/)) {
+          if (meetings.length === 0) {
+            return "You don't have any meetings scheduled yet. Would you like me to help you schedule one? Just tell me when and what it's about!";
+          }
+          let response = `You have ${meetings.length} meeting${meetings.length > 1 ? 's' : ''} scheduled:\n\n`;
+          meetings.slice(0, 5).forEach((m, i) => {
+            const date = new Date(m.start_time_utc);
+            response += `${i + 1}. **${m.title}** - ${date.toLocaleString()}\n`;
+            if (m.mode) response += `   Mode: ${m.mode}\n`;
+            if (m.meeting_link) response += `   Link: ${m.meeting_link}\n`;
+            response += '\n';
+          });
+          if (meetings.length > 5) {
+            response += `...and ${meetings.length - 5} more.`;
+          }
+          return response;
+        }
+        
+        // Help
+        if (lowerMsg.match(/(help|what can you do|what do you do|how do i|instructions)/)) {
+          return `I'm your AI scheduling assistant! Here's what I can do:\n\n` +
+            `📅 **Schedule meetings** - Just tell me when and what, like "Schedule a meeting tomorrow at 3pm"\n` +
+            `📋 **Show your meetings** - Ask "what meetings do I have?"\n` +
+            `💬 **Chat with you** - I'm here to help!\n\n` +
+            `Try saying something like:\n` +
+            `• "Schedule a Zoom call next Monday at 10am"\n` +
+            `• "Add a meeting tomorrow at 2pm"\n` +
+            `• "What meetings do I have?"`;
+        }
+        
+        // Thank you
+        if (lowerMsg.match(/(thanks|thank you|appreciate it|cheers)/)) {
+          return "You're welcome! 😊 Happy to help. Is there anything else you'd like to schedule?";
+        }
+        
+        // Bye
+        if (lowerMsg.match(/(bye|goodbye|see you|farewell|cya)/)) {
+          return "Goodbye! 👋 Have a great day! Don't forget to check your reminders.";
+        }
+        
+        return null; // Not a basic conversation, try scheduling
+      }
+
+      document.getElementById("chatSend").onclick = sendChatMessage;
+      document.getElementById("chatInput").onkeypress = (e) => {
+        if (e.key === "Enter") sendChatMessage();
+      };
+
+      async function sendChatMessage() {
+        const inputEl = document.getElementById("chatInput");
+        const sendBtn = document.getElementById("chatSend");
+        const message = inputEl.value.trim();
+
+        if (!message) return;
+
+        addMessage(message, true);
+        inputEl.value = "";
+        sendBtn.disabled = true;
+        sendBtn.innerHTML = '<span class="loading"></span>';
+
+        // Check for basic conversation first
+        const basicResponse = handleBasicConversation(message);
+        if (basicResponse) {
+          setTimeout(() => {
+            addMessage(basicResponse, false);
+            sendBtn.disabled = false;
+            sendBtn.textContent = "Send";
+          }, 500);
+          return;
+        }
+
+        // Try to schedule if it's not basic conversation
+        try {
+          const res = await fetch(API_BASE + "/api/schedule/", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: "Token " + token,
+            },
+            body: JSON.stringify({ text: message }),
+          });
+
+          const data = await res.json();
+
+          if (!res.ok) {
+            throw new Error(data.error || "Failed to schedule");
+          }
+
+          addMessage(
+            `✓ Great! I've scheduled "${data.title}" for ${new Date(data.start_time_utc).toLocaleString()}. You'll receive reminders before the meeting!`,
+            false
+          );
+
+          meetings.push(data);
+          localStorage.setItem("meetings", JSON.stringify(meetings));
+          renderMeetings();
+          renderCalendar();
+        } catch (error) {
+          addMessage(
+            `I understand you want to schedule something, but I need a bit more detail. Try saying something like "Schedule a meeting tomorrow at 3pm" or "Add a Zoom call next Monday at 10am". If you just want to chat, feel free to say hi! 😊`,
+            false
+          );
+        } finally {
+          sendBtn.disabled = false;
+          sendBtn.textContent = "Send";
+        }
+      }
+
+      // Initialize
+      checkAuth();
     </script>
   </body>
 </html>
-
-
