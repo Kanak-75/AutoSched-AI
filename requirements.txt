@@ -1,0 +1,7 @@
+Django>=5.0
+djangorestframework
+djangorestframework-authtoken
+pydantic>=2.0
+apscheduler>=3.10
+google-genai
+

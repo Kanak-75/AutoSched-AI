@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>AutoSched-AI</title>
+    <style>
+      body {
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+          sans-serif;
+        margin: 0;
+        min-height: 100vh;
+        background: #000;
+        color: #fff;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        padding: 2rem;
+      }
+      .shell {
+        width: 100%;
+        max-width: 900px;
+        display: grid;
+        grid-template-columns: 1fr 2fr;
+        gap: 1.5rem;
+      }
+      .card {
+        background: #111;
+        border-radius: 12px;
+        border: 1px solid #444;
+        padding: 1.25rem;
+      }
+      label {
+        display: block;
+        font-size: 0.8rem;
+        margin-top: 0.4rem;
+      }
+      input,
+      select,
+      button {
+        width: 100%;
+        margin-top: 0.25rem;
+        padding: 0.4rem;
+        border-radius: 6px;
+        border: 1px solid #333;
+        background: #000;
+        color: #fff;
+      }
+      button {
+        background: #fff;
+        color: #000;
+        border: none;
+        font-weight: 600;
+        cursor: pointer;
+      }
+      pre {
+        background: #000;
+        border-radius: 6px;
+        border: 1px solid #333;
+        padding: 0.5rem;
+        font-size: 0.7rem;
+        max-height: 150px;
+        overflow: auto;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <div class="card">
+        <h2 style="margin-top: 0">AutoSched-AI</h2>
+        <p style="color: #aaa; font-size: 0.8rem">
+          Minimal black scheduling dashboard.
+        </p>
+
+        <h4>Auth</h4>
+        <label>Username</label>
+        <input id="auth-username" />
+        <label>Email (for signup)</label>
+        <input id="auth-email" />
+        <label>Password</label>
+        <input id="auth-password" type="password" />
+        <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem">
+          <button id="btn-login" style="flex: 1">Login</button>
+          <button id="btn-signup" style="flex: 1">Sign up</button>
+        </div>
+        <div id="auth-status" style="margin-top: 0.5rem; font-size: 0.75rem"></div>
+      </div>
+
+      <div class="card">
+        <h3 style="margin-top: 0">Create Meeting</h3>
+        <div
+          style="
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr;
+            gap: 0.75rem;
+            font-size: 0.8rem;
+          "
+        >
+          <div>
+            <label>Title</label>
+            <input id="title" />
+
+            <label>Date</label>
+            <input id="date" type="date" />
+
+            <label>Time</label>
+            <input id="time" type="time" />
+
+            <label>Timezone</label>
+            <select id="timezone">
+              <option value="Asia/Kolkata">Asia/Kolkata (IST)</option>
+              <option value="UTC">UTC</option>
+              <option value="America/New_York">America/New_York</option>
+              <option value="Europe/London">Europe/London</option>
+            </select>
+          </div>
+          <div>
+            <label>Mode</label>
+            <select id="mode">
+              <option value="">(none)</option>
+              <option value="online">Online</option>
+              <option value="offline">Offline</option>
+            </select>
+
+            <label>Platform</label>
+            <select id="app">
+              <option value="">(none)</option>
+              <option value="meet">Google Meet</option>
+              <option value="zoom">Zoom</option>
+              <option value="teams">Teams</option>
+            </select>
+
+            <label>Meeting URL</label>
+            <input id="link" />
+
+            <label>Location (onsite)</label>
+            <input id="location" />
+          </div>
+        </div>
+
+        <div
+          style="
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.75rem;
+            margin-top: 1rem;
+            font-size: 0.8rem;
+          "
+        >
+          <div>
+            <label>Minutes before</label>
+            <input id="rem-before" type="number" value="15" />
+          </div>
+          <div>
+            <label>Reminder count</label>
+            <input id="rem-count" type="number" value="1" />
+          </div>
+          <div>
+            <label>Interval (min)</label>
+            <input id="rem-interval" type="number" value="5" />
+          </div>
+        </div>
+
+        <button id="btn-schedule" style="margin-top: 1rem">Schedule</button>
+
+        <div id="error" style="color: #f44; font-size: 0.75rem; margin-top: 0.5rem">
+        </div>
+        <pre id="result"></pre>
+      </div>
+    </div>
+
+    <script>
+      const API_BASE = "http://127.0.0.1:8000";
+      let token = null;
+
+      async function callApi(path, method, body, useAuth = false) {
+        const headers = { "Content-Type": "application/json" };
+        if (useAuth && token) headers["Authorization"] = "Token " + token;
+        const res = await fetch(API_BASE + path, {
+          method,
+          headers,
+          body: body ? JSON.stringify(body) : undefined,
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          throw data;
+        }
+        return data;
+      }
+
+      document.getElementById("btn-login").onclick = async () => {
+        const username = document.getElementById("auth-username").value;
+        const password = document.getElementById("auth-password").value;
+        try {
+          const data = await callApi(
+            "/api/login/",
+            "POST",
+            { username, password },
+            false
+          );
+          token = data.token;
+          document.getElementById("auth-status").textContent = "Logged in.";
+        } catch (e) {
+          document.getElementById("auth-status").textContent =
+            e.error || "Login failed";
+        }
+      };
+
+      document.getElementById("btn-signup").onclick = async () => {
+        const username = document.getElementById("auth-username").value;
+        const email = document.getElementById("auth-email").value;
+        const password = document.getElementById("auth-password").value;
+        try {
+          const data = await callApi(
+            "/api/signup/",
+            "POST",
+            { username, email, password },
+            false
+          );
+          token = data.token;
+          document.getElementById("auth-status").textContent = "Account created.";
+        } catch (e) {
+          document.getElementById("auth-status").textContent =
+            e.error || "Signup failed";
+        }
+      };
+
+      document.getElementById("btn-schedule").onclick = async () => {
+        const errEl = document.getElementById("error");
+        const resEl = document.getElementById("result");
+        errEl.textContent = "";
+        resEl.textContent = "";
+
+        if (!token) {
+          errEl.textContent = "Please login or signup first.";
+          return;
+        }
+
+        const title = document.getElementById("title").value;
+        const date = document.getElementById("date").value;
+        const time = document.getElementById("time").value;
+        const timezone = document.getElementById("timezone").value;
+        const mode = document.getElementById("mode").value || null;
+        const app = document.getElementById("app").value || null;
+        const link = document.getElementById("link").value || null;
+        const location = document.getElementById("location").value || null;
+        const remBefore = parseInt(
+          document.getElementById("rem-before").value || "15",
+          10
+        );
+        const remCount = parseInt(
+          document.getElementById("rem-count").value || "1",
+          10
+        );
+        const remInterval = parseInt(
+          document.getElementById("rem-interval").value || "5",
+          10
+        );
+
+        const startLocal = new Date(`${date}T${time}`);
+        const startUtc = startLocal.toISOString();
+        const nowUtc = new Date().toISOString();
+
+        const payload = {
+          title,
+          description: null,
+          mode,
+          application: app,
+          meeting_link: link,
+          location,
+          start_time_utc: startUtc,
+          end_time_utc: null,
+          timezone,
+          reminder_minutes_before: remBefore,
+          reminder_count: remCount,
+          reminder_interval_minutes: remInterval,
+          cron_expression: null,
+          email_to: document.getElementById("auth-email").value || "user@example.com",
+          json_created_at: nowUtc,
+        };
+
+        try {
+          const data = await callApi(
+            "/api/schedule/",
+            "POST",
+            { text: JSON.stringify(payload) },
+            true
+          );
+          resEl.textContent = JSON.stringify(data, null, 2);
+        } catch (e) {
+          errEl.textContent = e.error || "Schedule failed";
+        }
+      };
+    </script>
+  </body>
+</html>
+
+
