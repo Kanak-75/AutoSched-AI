@@ -599,9 +599,21 @@
         }
       }
 
+      @media (max-width: 1400px) {
+        .main-content {
+          grid-template-columns: 280px 1fr 340px;
+        }
+      }
+
       @media (max-width: 1200px) {
         .main-content {
           grid-template-columns: 1fr;
+        }
+        
+        .sidebar {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 1.5rem;
         }
       }
     </style>
@@ -649,7 +661,7 @@
         <!-- Left Sidebar: Calendar & Notes -->
         <div class="sidebar">
           <!-- Calendar -->
-          <div class="card">
+          <div class="card calendar-card">
             <h3>📅 Calendar</h3>
             <div class="calendar" id="calendar"></div>
           </div>
